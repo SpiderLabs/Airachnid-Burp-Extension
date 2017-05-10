@@ -1,6 +1,14 @@
 # Airachnic Burp Extension
 A Burp extension to test applications for vulnerability to the Web Cache Deception attack.
 
+
+## Installation
+* Download the Airachnid.jar file.
+* In Burp Suite open Extender tab. In Extensions tab, click Add button.
+* Choose downloaded jar file -> Next.
+* Check installation for no error messages.
+
+## Vulnerability
 In February 2017, security researcher Omer Gil unveiled a new attack vector dubbed “Web Cache Deception” (https://omergil.blogspot.co.il/2017/02/web-cache-deception-attack.html).
 
 The Web Cache Deception attack could be devastating in consequences, but is very simple to execute.
@@ -11,7 +19,6 @@ The Web Cache Deception attack could be devastating in consequences, but is very
 
 * Of course, this attack only makes sense when the vulnerable resource available to the attacker returns sensitive data.
 
-## Vulnerability
 The attack depends on a very specific set of circumstances to make the application vulnerable.
 
 ##### 1. The application only reads the first part of the URL to determine the resource to return.  
