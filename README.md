@@ -57,7 +57,4 @@ These preconditions can be exploited for the Web Cache Deception attack in the f
  
 * The cached resource, which is in fact the victim profile page is returned to the attacker (and to anyone else requesting it).
 
-#### MIND BLOWN
-
-
-*"Long ago, Airachnid was with the Decepticons, where her cruel, cold-sparked, murderous demeanor served her well. After the Great Exodus of Cybertron, however, she decided to go solo."*
+*MIND BLOWN* How easy is that?
