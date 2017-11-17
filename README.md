@@ -1,12 +1,12 @@
-# Airachnid Burp Extension
+# Web Cache Deception Burp Extension
 A Burp extension to test applications for vulnerability to the Web Cache Deception attack.
 
-Once the extension has been loaded, it can be accessed in the Target - Sitemap tab and right click on the resource that should be tested. A context sensitive menu item called "Airachnid Web Cache Test" will be shown and can be used to conduct testing. If the resource is vulnerable, an Issue is created detailing the vulnerability.
+Once the extension has been loaded, it can be accessed in the Target - Sitemap tab and right click on the resource that should be tested. A context sensitive menu item called "Web Cache Deception Test" will be shown and can be used to conduct testing. If the resource is vulnerable, an Issue is created detailing the vulnerability.
 
 The context sensitive menu item is also available for requests in the Proxy - Http History tab.
 
 ## Installation
-* Download the Airachnid.jar file.
+* Download the WebCacheDeceptionScanner.jar file.
 * In Burp Suite open Extender tab. In Extensions tab, click Add button.
 * Choose downloaded jar file -> Next.
 * Check installation for no error messages.
@@ -58,3 +58,12 @@ These preconditions can be exploited for the Web Cache Deception attack in the f
 * The cached resource, which is in fact the victim profile page is returned to the attacker (and to anyone else requesting it).
 
 *MIND BLOWN* How easy is that?
+
+## Changelog
+
+### 1.1
+- Changed so scanning for this issue is included when doing an active scan.
+- Updated scanning to include lessons learnt from real life environments.
+- Reporting now only done by adding
+
+### 1.0 Release
