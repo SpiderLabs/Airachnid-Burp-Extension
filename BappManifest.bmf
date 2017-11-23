@@ -3,9 +3,9 @@ ExtensionType: 1
 Name: Web Cache Deception Scanner
 RepoName: web-cache-deception-scanner
 ScreenVersion: 1.1
-SerialVersion: 2
+SerialVersion: 3
 MinPlatformVersion: 0
-ProOnly: False
+ProOnly: True
 Author: Johan Snyman, Trustwave
 ShortDescription: Detect web cache misconfigurations with Burp.
 EntryPoint: build/libs/web-cache-deception-scanner-all.jar
