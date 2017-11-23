@@ -3,7 +3,7 @@ package burp;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -149,11 +149,7 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory {
                 }
 
             } catch (Throwable t) {
-                try {
-                    callbacks.getStderr().write(t.toString().getBytes());
-                } catch (IOException ioe) {
-                    print(t.toString());
-                }
+                t.printStackTrace(new PrintStream(callbacks.getStderr()));
             }
         }
     }
