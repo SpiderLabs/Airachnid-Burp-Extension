@@ -16,9 +16,9 @@ class RequestSender {
     private final static String WORD = "test";
 
     protected final static String[] INITIAL_TEST_EXTENSIONS = {"css", "jpg", "js"};
-    protected final static String[] OTHER_TEST_EXTENSIONS = {"html", "htm", "gif", "png", "cgi", "pl", "java", "class",
-            "php", "php3", "shtm", "shtml", "cfm", "cfml", "doc", "log", "txt", "csv", "ppt", "m4a", "mid", "mp3", "flv",
-            "m4v", "mov", "tif", "svg", "pdf", "xls", "sql", "bat", "exe", "jsp", "asp", "aspx", "jpeg"};
+    protected final static String[] OTHER_TEST_EXTENSIONS = {"html", "gif", "png", "svg",  "php", "txt", "pdf", "jsp", "asp"};
+//            , "php3", "shtm", "shtml", "cfm", "cfml", "doc", "log", "csv", "ppt", "m4a", "mid", "mp3", "flv",
+//            "m4v", "mov", "tif", "xls", "sql", "bat", "exe",, "aspx", "jpeg", "htm", "cgi", "pl", "java", "class"};
 
     private static byte[] orgResponse;
 
@@ -29,47 +29,48 @@ class RequestSender {
      * @return
      */
     protected static boolean initialTest(IHttpRequestResponse message) {
-        // Send the original request again
+        // Send the original request again, to get the response
         byte[] orgRequest = buildHttpRequest(message, null, null, true);
-        orgResponse = retrieveResponseBody(message.getHttpService(), orgRequest, true);
+        orgResponse = retrieveResponseBody(message.getHttpService(), orgRequest);
 
         // Send an unauthenticated - to root out fp's. Unauthenticated should not be the same as original
         byte[] unAuthedRequest = buildHttpRequest(message, null, null, false);
-        byte[] unAuthedResponse = retrieveResponseBody(message.getHttpService(), unAuthedRequest, false);
+        byte[] unAuthedResponse = retrieveResponseBody(message.getHttpService(), unAuthedRequest);
 
         // Test that the original request and an unauthenticated request do not get the same response.
         // Same here is similar, according to the thresholds set
-        boolean authed = testSimilar(new String(orgResponse), new String(unAuthedResponse));
-        if (authed) {
-            BurpExtender.print("Request not vulnerable");
+        boolean unauthed = testSimilar(new String(orgResponse), new String(unAuthedResponse));
+        if (unauthed) {
+            BurpExtender.print("Request not vulnerable, no auth: ");
             return false;
         }
 
         // Send with /test appended, check that everything after is ignored
         byte[] testRequest = buildHttpRequest(message, WORD, null, true);
-        byte[] testResponse = retrieveResponseBody(message.getHttpService(), testRequest, true);
+        byte[] testResponse = retrieveResponseBody(message.getHttpService(), testRequest);
 
         boolean append = testSimilar(new String(orgResponse), new String(testResponse));
         if (!append) {
-            BurpExtender.print("Request not vulnerable.");
+            BurpExtender.print("Request not vulnerable, appending to end not similar.");
         }
         return append;
     }
 
-    protected static boolean getFileTypeCached(IHttpRequestResponse message, String extension) {
+    protected static boolean getFileTypeCached(IHttpRequestResponse message, String ext) {
         // Send with extension, potentially create cached version of resource
-        byte[] extRequest = buildHttpRequest(message, WORD, extension, true);
-        byte[] extResponse = retrieveResponseBody(message.getHttpService(), extRequest, false);
+        byte[] extRequest = buildHttpRequest(message, WORD, ext, true);
+        byte[] extResponse = retrieveResponseBody(message.getHttpService(), extRequest);
 
         // Send an unauthenticated, test if vulnerable
-        byte[] vulRequest = buildHttpRequest(message, WORD, extension, false);
-        byte[] vulResponse = retrieveResponseBody(message.getHttpService(), vulRequest, false);
+        byte[] vulRequest = buildHttpRequest(message, WORD, ext, false);
+        byte[] vulResponse = retrieveResponseBody(message.getHttpService(), vulRequest);
 
-        boolean eq = testSimilar(new String(extResponse), new String(vulResponse)); //= new String(extResponse).equals(new String(vulResponse));
+        boolean eq = testSimilar(new String(extResponse), new String(vulResponse));
         if (!eq) {
-            BurpExtender.print("Request is not vulnerable.");
+            BurpExtender.print(ext + " cached adding extension to list");
+        } else {
+            BurpExtender.print("Request is not vulnerable, no caching.");
         }
-
         return eq;
     }
 
@@ -132,14 +133,14 @@ class RequestSender {
         return result;
     }
 
-    private static byte[] retrieveResponseBody(IHttpService service, byte[] request, boolean checkResponseCode) {
+    private static byte[] retrieveResponseBody(IHttpService service, byte[] request) {
         byte[] result = null;
 
         IHttpRequestResponse test = BurpExtender.getCallbacks().makeHttpRequest(service, request);
         byte[] res = test.getResponse();
         IResponseInfo responseInfo = BurpExtender.getHelpers().analyzeResponse(res);
 
-        if (checkResponseCode && responseInfo.getStatusCode() == 200) {
+        if (responseInfo.getBodyOffset() > 0) {
             int len = res.length - responseInfo.getBodyOffset();
             result = new byte[len];
             System.arraycopy(res, responseInfo.getBodyOffset(), result, 0, len);
@@ -196,8 +197,7 @@ class RequestSender {
     }
 
     /**
-     * Testing if the responses of two requests are similar. This is the not the same as the same, rather there is a
-     * threshold set in the static parameters of the class.
+     * Testing if the responses of two requests are similar. This is the not the same as equals, but below a static threshold
      * @param firstString
      * @param secondString
      * @return Test if similar
@@ -208,7 +208,7 @@ class RequestSender {
         int levenDist = StringUtils.getLevenshteinDistance(firstString, secondString);
 
 //        BurpExtender.print("============================================");
-//        BurpExtender.print("Fuzzy Distance:" + fuzzyDist);
+//        BurpExtender.print("        Fuzzy Distance:" + fuzzyDist);
 //        BurpExtender.print("        Jaro Winkler Distance:" + jaroDist);
 //        BurpExtender.print("        Levenshtein Distance:" + levenDist);
 //        BurpExtender.print("============================================");

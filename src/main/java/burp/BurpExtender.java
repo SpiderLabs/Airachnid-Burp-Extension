@@ -3,6 +3,7 @@ package burp;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -42,20 +43,10 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory {
         helpers = iBurpExtenderCallbacks.getHelpers();
     }
 
-    private List<IScanIssue> runScannerForRequest(IHttpRequestResponse iHttpRequestResponse) {
+    private void runScannerForRequest(IHttpRequestResponse iHttpRequestResponse) {
+        print("runScannerForRequest");
         ExecutorService service = Executors.newFixedThreadPool(1);
-        Future<List<IScanIssue>> task = service.submit(new ScannerThread(iHttpRequestResponse));
-        List<IScanIssue> result = null;
-
-        try {
-            result = task.get();
-        } catch(final InterruptedException ex) {
-            ex.printStackTrace();
-        } catch(final ExecutionException ex) {
-            ex.printStackTrace();
-        }
-
-        return result;
+        service.execute(new ScannerThread(iHttpRequestResponse));
     }
 
     /**
@@ -94,11 +85,7 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (IHttpRequestResponse message : arr) {
-                List<IScanIssue> result = runScannerForRequest(message);
-
-                if (result != null) {
-                    callbacks.addScanIssue(result.get(0));
-                }
+                runScannerForRequest(message);
             }
         }
     }
@@ -113,7 +100,8 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory {
 
         @Override
         public List<IScanIssue> doActiveScan(IHttpRequestResponse iHttpRequestResponse, IScannerInsertionPoint iScannerInsertionPoint) {
-            return runScannerForRequest(iHttpRequestResponse);
+            runScannerForRequest(iHttpRequestResponse);
+            return new ArrayList<>();
         }
 
         @Override
@@ -123,42 +111,50 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory {
         }
     }
 
-    class ScannerThread implements Callable<List<IScanIssue>> {
+    class ScannerThread implements Runnable {
 
-        private List<IScanIssue> result = null;
         private IHttpRequestResponse reqRes;
 
         ScannerThread(IHttpRequestResponse reqRes) {
             this.reqRes = reqRes;
         }
 
-        public List<IScanIssue> call() {
-            // Test One: Does appending to the URL return a similar response.
-            if (RequestSender.initialTest(reqRes)) {
-                Set<String> fileTypesCached = new HashSet<>();
+        @Override
+        public void run() {
+            try {
+                print("run");
 
-                // Test two: Check if caching is done by file type
-                for (String ext : RequestSender.INITIAL_TEST_EXTENSIONS) {
-                    if (RequestSender.getFileTypeCached(reqRes, ext)) {
-                        fileTypesCached.add(ext);
-                    }
-                }
+                // Test One: Does appending to the URL return a similar response.
+                if (RequestSender.initialTest(reqRes)) {
+                    Set<String> fileTypesCached = new HashSet<>();
 
-                if (fileTypesCached.size() != 0) {
-                    for (String ext : RequestSender.OTHER_TEST_EXTENSIONS) {
+                    // Test two: Check if caching is done by file type
+                    for (String ext : RequestSender.INITIAL_TEST_EXTENSIONS) {
                         if (RequestSender.getFileTypeCached(reqRes, ext)) {
                             fileTypesCached.add(ext);
                         }
                     }
 
-                    WebCacheIssue issue = new WebCacheIssue(reqRes);
-                    issue.setVulnerableExtensions(fileTypesCached);
+                    if (fileTypesCached.size() > 0) {
+                        for (String ext : RequestSender.OTHER_TEST_EXTENSIONS) {
+                            if (RequestSender.getFileTypeCached(reqRes, ext)) {
+                                fileTypesCached.add(ext);
+                            }
+                        }
 
-                    return Arrays.asList(issue);
+                        WebCacheIssue issue = new WebCacheIssue(reqRes);
+                        issue.setVulnerableExtensions(fileTypesCached);
+                        callbacks.addScanIssue(issue);
+                    }
+                }
+
+            } catch (Throwable t) {
+                try {
+                    callbacks.getStderr().write(t.toString().getBytes());
+                } catch (IOException ioe) {
+                    print(t.toString());
                 }
             }
-
-            return result;
         }
     }
 }
