@@ -2,8 +2,8 @@ Uuid: 7c1ca94a61474d9e897d307c858d52f0
 ExtensionType: 1
 Name: Web Cache Deception Scanner
 RepoName: web-cache-deception-scanner
-ScreenVersion: 1.0
-SerialVersion: 1
+ScreenVersion: 1.1
+SerialVersion: 2
 MinPlatformVersion: 0
 ProOnly: False
 Author: Johan Snyman, Trustwave
