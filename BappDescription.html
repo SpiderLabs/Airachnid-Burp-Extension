@@ -1,0 +1,23 @@
+<p>This extension tests applications for the Web Cache Deception vulnerability.</p>
+
+<p>It adds a new Active Scanner check. Additionally, a context menu item is available to perform a targeted test.</p>
+
+<p><b>Vulnerability</b></p>
+
+<p>In February 2017, security researcher Omer Gil unveiled a new attack vector dubbed <a href="https://omergil.blogspot.co.il/2017/02/web-cache-deception-attack.html">Web Cache Deception</a>.</p>
+
+<p>The Web Cache Deception attack could be devastating in consequences, but is very simple to execute:</p>
+
+<ol>
+<li>Attacker coerces victim to open a link on the valid application server containing the payload.</li>
+<li>Attacker opens newly cached page on the server using the same link, to see the exact same page as the victim.</li>
+</ol>
+
+<p>The attack depends on a very specific set of circumstances to make the application vulnerable:</p>
+
+<ol>
+<li>The application only reads the first part of the URL to determine the resource to return, e.g. <i>/my_profile</i> can be accessed as <i>/my_profile_test</i>.</li>
+<li>The application stack caches resources according to their file extensions, rather than by cache header values, e.g. <i>/my_profile.jpg</i> is cached.</li>
+</ol>
+
+<p><a href="https://www.trustwave.com/Resources/SpiderLabs-Blog/Airachnid--Web-Cache-Deception-Burp-Extender/">Read more</a></p>
